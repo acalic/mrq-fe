@@ -1,11 +1,15 @@
 .symbolsView {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    overflow: hidden;
 }
 
 .symbolsView__content {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    overflow: hidden;
 }
 
 .symbolsView__chart {
@@ -14,12 +18,13 @@
 
 .symbolsView__cards {
     flex: 1;
+    overflow-y: auto;
 }
 
 @media (min-width: 1024px) {
     .symbolsView__content {
         margin-top: 16px;
-        flex-direction: row-reverse;
+        flex-direction: row-reverse; /* Place the chart on the right */
     }
 
     .symbolsView__chart {
