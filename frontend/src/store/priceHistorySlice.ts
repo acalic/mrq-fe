@@ -24,19 +24,39 @@ const initialState: PriceHistoryState = {
   symbol: null,
   history: [],
   apiState: {
-    loading: null,
+    loading: false,
     error: false
   }
+};
+
+type FetchPriceHistoryParams = {
+  symbolId: string;
+  signal: AbortSignal;
 };
 
 export const fetchPriceHistory = createAsyncThunk(
   'stocks/fetchPriceHistory',
   // if you type your function argument here
-  async (symbolId: string, thunkAPI) => {
-    const response = await fetch(`http://localhost:3100/api/stock/history/${symbolId}`, {
-      signal: thunkAPI.signal
-    });
-    return (await response.json()) as PriceHistoryResponse;
+  async ({ symbolId, signal }: FetchPriceHistoryParams, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`http://localhost:3100/api/stock/history/${symbolId}`, {
+        signal
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json() as PriceHistoryResponse;
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          return rejectWithValue({ aborted: true });
+        }
+        return rejectWithValue({ error: error.message });
+      }
+      return rejectWithValue({ error: 'Unknown error occurred' });
+    }
   }
 );
 
@@ -50,25 +70,31 @@ const priceHistorySlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     // Add reducers for additional action types here, and handle loading state as needed
-    builder.addCase(fetchPriceHistory.fulfilled, (state, action) => {
-      const { symbol, history } = action.payload;
-      state.apiState.error = false;
-      state.apiState.loading = false;
-      state.history = history;
-      state.symbol = symbol;
-    });
-
-    builder.addCase(fetchPriceHistory.rejected, (state, action) => {
-      if (!action.meta.aborted) {
-        state.apiState.error = true;
+    builder
+      .addCase(fetchPriceHistory.pending, (state) => {
+        state.apiState.loading = true;
+        state.apiState.error = false;
+        state.history = []; // Clear previous data when loading new
+      })
+      .addCase(fetchPriceHistory.fulfilled, (state, action) => {
+        const { symbol, history } = action.payload;
         state.apiState.loading = false;
-      }
-    });
-
-    builder.addCase(fetchPriceHistory.pending, (state, action) => {
-      state.apiState.error = false;
-      state.apiState.loading = true;
-    });
+        state.apiState.error = false;
+        state.history = history;
+        state.symbol = symbol;
+      })
+      .addCase(fetchPriceHistory.rejected, (state, action) => {
+        const payload = action.payload as { aborted?: boolean; error?: string };
+        if (payload?.aborted) {
+          // Do nothing for aborted requests
+          return;
+        }
+        // Handle actual errors
+        state.apiState.loading = false;
+        state.apiState.error = true;
+        state.history = [];
+        state.symbol = null;
+      });
   }
 });
 
