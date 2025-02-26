@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import SymbolCard from '../SymbolCard';
 import { fetchAllStocks, selectors } from '@/store/stocksSlice';
+
 type SymbolsGridProps = {
   onSymbolClick: (symbolId: string) => void;
   clickedCard: string | null;

@@ -1,14 +1,13 @@
 import './symbolCard.css';
-import { useEffect, useState } from 'react';
-import { formatPrice } from '@/lib';
+import React, { useCallback } from 'react';
 import { useAppSelector } from '@/hooks/redux';
 import { selectShowCardInfo } from '@/store/dashboardOptionsSlice';
-import { ReactComponent as CompanyIcon } from '@/assets/company.svg';
-import { ReactComponent as IndustryIcon } from '@/assets/industry.svg';
-import { ReactComponent as MarketCapIcon } from '@/assets/market_cap.svg';
-import ListItem from '@/components/ListItem';
+import { usePriceChangeEffect } from '@/hooks/effects/usePriceChangeEffect';
+
+import AnimatedContainer from './src/AnimatedContainer';
 import CardHeader from './src/CardHeader';
 import PriceDisplay from './src/PriceDisplay';
+import InfoSection from './src/InfoSection';
 
 type SymbolCardProps = {
   id: string;
@@ -20,57 +19,31 @@ type SymbolCardProps = {
 const SymbolCard = ({ id, onClick, price, clickedCard }: SymbolCardProps) => {
   const { trend, companyName, industry, marketCap } = useAppSelector((state) => state.stocks.entities[id]);
   const showCardInfo = useAppSelector(selectShowCardInfo);
+  const priceChangeClass = usePriceChangeEffect(price);
 
-  const [previousPrice, setPreviousPrice] = useState<number | null>(null);
-  const [priceChangeClass, setPriceChangeClass] = useState<string>('');
+  const handleOnClick = useCallback(() => {
+    onClick(id);
+  }, [onClick, id]);
 
-  useEffect(() => {
-    // Only proceed if we have a price and either no previous price or a different price
-    if (price && (!previousPrice || price !== previousPrice)) {
-      if (previousPrice) {
-        let newClass = '';
-
-        if (Math.abs(price - previousPrice) / previousPrice >= 0.25) {
-          newClass = 'symbolCard--shake';
-        } else if (price > previousPrice) {
-          newClass = 'symbolCard--glow-green';
-        } else if (price < previousPrice) {
-          newClass = 'symbolCard--glow-red';
-        }
-
-        setPriceChangeClass(newClass);
-
-        // Reset the class after animation
-        const timeout = setTimeout(() => {
-          setPriceChangeClass('');
-        }, 1000);
-
-        return () => clearTimeout(timeout);
-      }
-
-      // Update previous price after effects are applied
-      setPreviousPrice(price);
-    }
-  }, [price]);
-
-  const handleOnClick = () => onClick(id);
+  const className = `symbolCard ${
+    clickedCard === id ? 'symbolCard--clicked' : clickedCard ? 'symbolCard--not-clicked' : ''
+  } ${priceChangeClass}`;
 
   return (
-    <div
-      onClick={handleOnClick}
-      className={`symbolCard ${clickedCard === id ? 'symbolCard--clicked' : clickedCard ? 'symbolCard--not-clicked' : ''} ${priceChangeClass}`}
-    >
+    <AnimatedContainer className={className} onClick={handleOnClick}>
       <CardHeader id={id} trend={trend} />
       <PriceDisplay price={price} />
       {showCardInfo && (
-        <>
-          <ListItem spacing="space-between" Icon={<CompanyIcon />} label={companyName} />
-          <ListItem spacing="space-between" Icon={<IndustryIcon />} label={industry} />
-          <ListItem spacing="space-between" Icon={<MarketCapIcon />} label={formatPrice(marketCap)} />
-        </>
+        <InfoSection
+          companyName={companyName}
+          industry={industry}
+          marketCap={marketCap}
+        />
       )}
-    </div>
+    </AnimatedContainer>
   );
 };
 
-export default SymbolCard;
+SymbolCard.displayName = 'SymbolCard';
+
+export default React.memo(SymbolCard);

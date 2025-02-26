@@ -1,11 +1,12 @@
 import React from 'react';
 import './highlightedSymbols.css';
+import { stockTypes } from '@/lib/types';
 
 import PerformanceCard from '@/components/PerformanceCard';
 import Row from '@/components/Row';
 
 type HighlightedSymbol = {
-  trend?: 'UP' | 'DOWN' | null;
+  trend?: stockTypes.Trend;
   symbolId: string;
   volume: number;
   change: number;
