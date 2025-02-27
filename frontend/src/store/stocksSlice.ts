@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { RootState } from '@/store/index';
+import { stockTypes } from '@/lib/types';
 
 type Stock = {
   symbol: string;
@@ -7,7 +8,7 @@ type Stock = {
   industry: string;
   marketCap: number;
   exchange: 'NASDAQ' | 'NYSE';
-  trend: 'UP' | 'DOWN' | null;
+  trend: stockTypes.Trend;
 };
 
 type StockEntry = {

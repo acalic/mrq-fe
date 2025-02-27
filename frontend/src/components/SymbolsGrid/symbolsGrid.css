@@ -1,0 +1,7 @@
+.symbolsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    padding: 16px;
+    background: #e2e2e4;
+    border-radius: 4px;
+  }

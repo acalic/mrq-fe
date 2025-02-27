@@ -1,19 +1,31 @@
-import { useEffect } from 'react';
-import './priceChart.css';
-import { Line, LineChart, XAxis, YAxis, ResponsiveContainer } from 'recharts';
-import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { fetchPriceHistory, selectors } from '@/store/priceHistorySlice';
-import Loading from '@/components/Loading';
+import "./priceChart.css";
+import { useEffect } from "react";
+import { Line, LineChart, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { fetchPriceHistory, selectors } from "@/store/priceHistorySlice";
+import Loading from "@/components/Loading";
+
 type PriceChartProps = {
   symbolId: string | null;
 };
 
 const PriceChart = ({ symbolId }: PriceChartProps) => {
   const dispatch = useAppDispatch();
+  
   useEffect(() => {
-    if (symbolId) {
-      dispatch(fetchPriceHistory(symbolId));
-    }
+    if (!symbolId) return;
+
+    const controller = new AbortController();
+    
+    // Pass signal to thunk
+    dispatch(fetchPriceHistory({ 
+      symbolId, 
+      signal: controller.signal 
+    }));
+
+    return () => {
+      controller.abort();
+    };
   }, [dispatch, symbolId]);
 
   const apiState = useAppSelector(selectors.apiState);
@@ -28,6 +40,7 @@ const PriceChart = ({ symbolId }: PriceChartProps) => {
     );
   if (apiState.error) return <div className="priceChart">Failed to get price history!</div>;
   if (!symbolId) return <div className="priceChart">Select stock</div>;
+
   return (
     <div className="priceChart">
       <div>{symbolInfo}</div>

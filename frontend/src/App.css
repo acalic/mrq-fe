@@ -82,6 +82,15 @@ select {
   padding: 12px 24px 0;
   background-color: rgba(14, 17, 35, 0.02);
   min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 1024px) {
+  .App {
+    height: 100vh; /* Force fixed height on mobile */
+    overflow: hidden; /* Prevent body scroll on mobile */
+  }
 }
 
 @media (max-width: 767px) {
