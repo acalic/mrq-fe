@@ -1,5 +1,5 @@
 .symbolCard {
-  margin: 10px;
+  margin: 16px;
   position: relative;
   border-radius: 4px;
   background-color: #fdfdfd;
@@ -70,6 +70,12 @@
 .symbolCard__price-value {
   font-weight: bold;
   font-size: 22px;
+}
+
+@media screen and (max-width: 1024px) {
+  .symbolCard {
+    margin: 8px;
+  }
 }
 
 @keyframes glow-green {
